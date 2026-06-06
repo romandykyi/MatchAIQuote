@@ -22,13 +22,13 @@ public class DataProvider
             throw new ArgumentException($"Invalid language \"{language}\"", nameof(language));
         }
 
-        var quotesResponse = await _http.GetAsync($"/data/quotes-{category}.csv");
+        var quotesResponse = await _http.GetAsync($"data/quotes-{category}.csv");
         if (quotesResponse.StatusCode != System.Net.HttpStatusCode.OK)
         {
             throw new InvalidOperationException($"The status code (for quotes) {quotesResponse.StatusCode} is unexpected.");
         }
 
-        var transResponse = await _http.GetAsync($"/data/{language}/trans-{category}.csv");
+        var transResponse = await _http.GetAsync($"data/{language}/trans-{category}.csv");
         if (transResponse.StatusCode != System.Net.HttpStatusCode.OK)
         {
             throw new InvalidOperationException($"The status code (for translations) {quotesResponse.StatusCode} is unexpected.");
@@ -57,7 +57,7 @@ public class DataProvider
 
     public static async Task<DataProvider> CreateAsync(HttpClient http)
     {
-        var response = await http.GetAsync("/data/index.csv");
+        var response = await http.GetAsync("data/index.csv");
         if (response.StatusCode != System.Net.HttpStatusCode.OK)
         {
             throw new InvalidOperationException($"The status code {response.StatusCode} is unexpected.");
