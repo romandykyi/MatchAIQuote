@@ -2,7 +2,7 @@
 
 This is a game where you match AI generated meme translations with original quotes. You can play this by using [this link](https://romandykyi.github.io/MatchAIQuote/).
 
-The translations was generated using llama3.2, and quotes are taken from [this dataset](https://www.kaggle.com/datasets/kieranpoc/quotes) by Kieran O'Connor ([CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)).
+The translations were generated using llama3.2, and quotes are taken from [this dataset](https://www.kaggle.com/datasets/kieranpoc/quotes) by Kieran O'Connor ([CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)).
 
 ## Licensing
 
