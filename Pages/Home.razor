@@ -12,11 +12,17 @@
         This is a game where you match AI generated meme translations with original quotes. 
     </MudText>
     <MudText>
+        Some quotes might contain profanity, so be careful if you are sensitive to that.
+    </MudText>
+    <MudText>
         Used model: llama3.2
     </MudText>
     <MudText>
         <MudLink Href="https://www.kaggle.com/datasets/kieranpoc/quotes" Target="_blank">Used quotes dataset</MudLink> 
     </MudText>
+    <MudCheckBox @bind-Value="demotivatorEnabled">
+        Show demotivational phrases after each wrong answer
+    </MudCheckBox>
     <MudText Typo="Typo.h4">Pick a language:</MudText>
 
     @if (languages != null) 
@@ -48,13 +54,13 @@ else
             @if (userAnswer == currentQuestion.CorrectIndex)
             {
                 <MudAlert Severity="Severity.Success">
-                    Correct answer
+                    @GetCorrectAnswerPhrase()
                 </MudAlert>
             }
             else
             {
                 <MudAlert Severity="Severity.Error">
-                    Incorrect answer
+                    @GetWrongAnswerPhrase()
                 </MudAlert>
             }
         }
@@ -112,6 +118,7 @@ else
     public const int AnswersCount = 5;
 
     private readonly Random _random = new();
+    private readonly Random _phraseRandom = new();
     private DataProvider _dataProvider = null!;
     private List<string> _availableCategories = [];
     private int _totalCategoriesCount;
@@ -122,8 +129,56 @@ else
     private string? chosenLanguage = null;
 
     private QuizQuestion? currentQuestion;
+    private bool demotivatorEnabled { get; set; } = false;
     private int? userAnswer { get; set; } = null;
     private bool answerSubmitted = false;
+
+    private readonly List<string> demotivationalPhrases = new()
+    {
+        "Ahahahah, you'll never get it right, just give up now!",
+        "You better ragequit now.",
+        "That was a very wild guess.",
+        "Well, that was unexpected... and wrong.",
+        "Don't worry, even a broken clock is right twice a day!",
+        "You are the reason we can't have nice things.",
+        "You better not be elligible to vote.",
+        "If there was a prize for wrong answers, you'd be a millionaire by now.",
+        "Congratulations! You've unlocked the 'Wrong Answer' achievement... again.",
+        "Your answer is so wrong, it's almost impressive.",
+        "You're not wrong, you're just... wrong.",
+        "Even the youngest person on Earth has a better chance of getting this right than you.",
+        "My half-alive cow could've given a better answer than that.",
+        "You definitely play League of Legends, don't you?",
+        "Clankers will replace you soon, don't worry.",
+        "Unfortunately, this site has no captcha, otherwise it would be nice to verify that you are not a bot after such a wrong answer.",
+        "Skill issue? Or maybe brain issue? Or maybe both?",
+        "Don't worry, at least you are consistent... at being wrong.",
+        "If you were any slower, you'd be going backwards.",
+        "Are you an AI hallucination?",
+        "How can you read?",
+        "Are you sure it is not past your bedtime? You seem to be struggling with basic comprehension.",
+        "It is better to press Alt+F4 and go outside than to keep trying with such answers.",
+        "I'm glad that Sun will eventually burn out, because it would be awkward for it to witness more of your wrong answers.",
+        "I hope I will not have to share a road with you, because your driving must be as bad as your quiz performance.",
+        "Idiot sandwich.",
+        "I bet you regret checking that checkbox, dumb dumb.",
+    };
+    private readonly List<string> wrongAnswerPhrases = new()
+    {
+        "Not quite! Keep going!",
+        "So close! Give it another go.",
+        "Good effort! Let's try once more.",
+        "Unlucky! You'll get the next one for sure.",
+        "Good guess, but not it this time!"
+    };
+    private readonly List<string> correctAnswerPhrases = new()
+    {
+        "Exactly! Brilliant job.",
+        "That's it! Your hard work is paying off.",
+        "Boom! Nailed it on the first try.",
+        "Perfect answer! You're making this look easy.",
+        "Nice job! That is absolutely correct."
+    };
 
     private async Task NextQuestion()
     {
@@ -174,5 +229,19 @@ else
     {
         _dataProvider = await DataProvider.CreateAsync(HttpClient);
         languages = _dataProvider.LanguageToCategories.Keys.ToList();
+    }
+
+    private string GetCorrectAnswerPhrase()
+    {
+        return correctAnswerPhrases[_phraseRandom.Next(correctAnswerPhrases.Count)];
+    }
+
+    private string GetWrongAnswerPhrase()
+    {
+        if (demotivatorEnabled)
+        {
+            return demotivationalPhrases[_phraseRandom.Next(demotivationalPhrases.Count)];
+        }
+        return wrongAnswerPhrases[_phraseRandom.Next(wrongAnswerPhrases.Count)];
     }
 }
