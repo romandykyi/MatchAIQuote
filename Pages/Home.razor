@@ -1,14 +1,161 @@
 @page "/"
+@using MatchAIQuote.Core
+@inject HttpClient HttpClient
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Match AI Quote</PageTitle>
 
-<MudText Typo="Typo.h3" GutterBottom="true">Hello, world!</MudText>
-<MudText Class="mb-8">Welcome to your new app, powered by MudBlazor and the .NET 10 Template!</MudText>
+<MudText Typo="Typo.h3" GutterBottom="true">Match AI Quote</MudText>
 
+@if (chosenLanguage == null)
+{
+    <MudText>
+        This is a game where you match AI generated meme translations with original quotes.
+    </MudText>
+    <MudText>
+        Used model: llama3.2
+    </MudText>
+    <MudText>
+        <MudLink Href="https://www.kaggle.com/datasets/kieranpoc/quotes" Target="_blank">Used quotes dataset</MudLink> 
+    </MudText>
+    <MudText Typo="Typo.h4">Pick a language:</MudText>
 
-<MudAlert Severity="Severity.Normal" ContentAlignment="HorizontalAlignment.Start">
-    You can find documentation and examples on our website here:
-    <MudLink Href="https://mudblazor.com" Target="_blank" Typo="Typo.body2" Color="Color.Primary">
-        <b>www.mudblazor.com</b>
-    </MudLink>
-</MudAlert>
+    @if (languages != null) 
+    {
+        <MudList T="string">
+        @foreach (var language in languages) 
+        {
+            <MudListItem OnClick="() => OnLanguageChosen(language)">@language</MudListItem>
+        }
+        </MudList>
+    }
+    else
+    {
+        <MudProgressCircular Indeterminate />
+    }
+}
+else
+{
+    <MudText Typo="Typo.h5">Question @questionsCounter</MudText>
+    @if (currentQuestion != null)
+    {
+        <MudText>@currentQuestion.Translation (@currentQuestion.CorrectIndex)</MudText>
+        @if (answerSubmitted)
+        {
+            @if (userAnswer == currentQuestion.CorrectIndex)
+            {
+                <MudAlert Severity="Severity.Success">
+                    Correct answer
+                </MudAlert>
+            }
+            else
+            {
+                <MudAlert Severity="Severity.Error">
+                    Incorrect answer
+                </MudAlert>
+            }
+        }
+        <MudRadioGroup T="int?" @bind-Value="userAnswer" Disabled="@(answerSubmitted)">
+            <MudStack>
+                @foreach (var (answer, index) in currentQuestion.Quotes.Select((x, i) => (x, i)))
+                {
+                    <MudRadio Value="@((int?)index)">@index : @answer</MudRadio>
+                }
+            </MudStack>
+        </MudRadioGroup>
+        @if (!answerSubmitted)
+        {
+            <MudButton 
+                OnClick="() => OnAnswerSubmitted()"
+                Color="Color.Primary"
+                Disabled="@(userAnswer == null)" 
+                ButtonType="ButtonType.Submit"
+                Variant="Variant.Outlined">
+                Submit
+            </MudButton>
+        }
+        else
+        {
+            <MudButton 
+                OnClick="() => NextQuestion()" 
+                Color="Color.Primary"
+                ButtonType="ButtonType.Submit"
+                Variant="Variant.Filled">
+                Next
+            </MudButton>
+        }
+    }
+    else
+    {
+        <MudProgressCircular Indeterminate />
+    }
+}
+
+@code {
+    public const int PlaysPerCategory = 20;
+    public const int AnswersCount = 5;
+
+    private readonly Random _random = new();
+    private DataProvider _dataProvider = null!;
+    private List<string> _availableCategories = [];
+    private int _totalCategoriesCount;
+    private Quiz _quiz = null!;
+
+    private int questionsCounter = 0;
+    private List<string> languages = null!;
+    private string? chosenLanguage = null;
+
+    private QuizQuestion? currentQuestion;
+    private int? userAnswer { get; set; } = null;
+    private bool answerSubmitted = false;
+
+    private async Task NextQuestion()
+    {
+        questionsCounter++;
+        currentQuestion = null;
+        if (_quiz.TimesPlayed >= PlaysPerCategory || 
+            !_quiz.TryGetNext(out var question))
+        {
+            await NextCategory();
+            return;
+        }
+        userAnswer = null;
+        answerSubmitted = false;
+        currentQuestion = question;
+    }
+
+    private async Task NextCategory()
+    {
+        if (_availableCategories.Count < _totalCategoriesCount / 2)
+        {
+            _availableCategories = new(_dataProvider.LanguageToCategories[chosenLanguage!]);
+        }
+        int categoryIndex = _random.Next(_availableCategories.Count);   
+        string category = _availableCategories[categoryIndex];
+        _availableCategories.RemoveAt(categoryIndex);
+
+        var entries = await _dataProvider.LoadEntries(chosenLanguage!, category);
+        _quiz = new Quiz(entries, _random, AnswersCount);
+
+        await NextQuestion();
+    }
+
+    private async Task OnLanguageChosen(string language)
+    {
+        chosenLanguage = language;
+        _totalCategoriesCount = _dataProvider.LanguageToCategories[language].Count;
+        _availableCategories = new(_dataProvider.LanguageToCategories[language]);
+
+        await NextCategory();
+    }
+
+    private async Task OnAnswerSubmitted()
+    {
+        answerSubmitted = true;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _dataProvider = await DataProvider.CreateAsync(HttpClient);
+        languages = _dataProvider.LanguageToCategories.Keys.ToList();
+    }
+}
