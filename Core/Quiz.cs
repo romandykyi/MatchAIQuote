@@ -49,6 +49,7 @@ public class Quiz(List<QuizEntry> entries, Random random, int answersCount = 4)
         {
             int rndIndex = _random.Next(i, AnswersCount);
             if (i == correctIndex) correctIndex = rndIndex;
+            else if (rndIndex == correctIndex) correctIndex = i;
             (answers[rndIndex], answers[i]) = (answers[i], answers[rndIndex]);
         }
 
