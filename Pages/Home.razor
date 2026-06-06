@@ -55,7 +55,10 @@
 }
 else
 {
-    <MudText Typo="Typo.h5">Question @questionsCounter (@chosenLanguage)</MudText>
+    @if (questionsCounter > 0)
+    {
+        <MudText Typo="Typo.h5">Question @questionsCounter (@chosenLanguage)</MudText>
+    }
     @if (currentQuestion != null)
     {
         <MudPaper Elevation="2" Class="pa-6 mb-6 rounded-lg">
