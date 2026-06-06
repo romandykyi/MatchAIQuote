@@ -9,6 +9,9 @@ public class Quiz(List<QuizEntry> entries, Random random, int answersCount = 4)
     private readonly Random _random = random;
     public int AnswersCount { get; } = answersCount;
 
+    public int EntriesCount => _entries.Count;
+    public int TimesPlayed => _timesPlayed;
+
     public bool TryGetNext([NotNullWhen(true)] out QuizQuestion? question)
     {
         if (_timesPlayed >= _entries.Count || _entries.Count < AnswersCount) {
