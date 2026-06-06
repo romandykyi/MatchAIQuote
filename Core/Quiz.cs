@@ -31,16 +31,22 @@ public class Quiz(List<QuizEntry> entries, Random random, int answersCount = 4)
         {
             (_entries[0], _entries[_timesPlayed]) = (_entries[_timesPlayed], _entries[0]);
         }
-        // Put the used quote as the first element of array
+        // Put the chosen quote as the first element of the array
         (_entries[0], _entries[transIndex]) = (_entries[transIndex], _entries[0]);
 
-        // Find non-repeating random answers
+        // Find non-repeating random answers (array lookup should be faster than hashset for small answers count)
+        int[] usedIndices = new int[AnswersCount - 1];
         for (int i = 1; i < AnswersCount; i++)
         {
-            int rndIndex = _random.Next(1, _entries.Count - i - 1);
+            // Naive, but our datasets are big and collision probability is small
+            int rndIndex;
+            do
+            {
+                rndIndex = _random.Next(1, _entries.Count);
+            } while (usedIndices.IndexOf(rndIndex) != -1);
+            usedIndices[i - 1] = rndIndex;
+
             answers[i] = _entries[rndIndex].Quote;
-            // Swap with the "end" element to avoid repetition
-            (_entries[^i], _entries[rndIndex]) = (_entries[^i], _entries[rndIndex]);
         }
 
         // Shuffle answers
