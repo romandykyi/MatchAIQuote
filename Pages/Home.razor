@@ -9,7 +9,7 @@
 @if (chosenLanguage == null)
 {
     <MudText>
-        This is a game where you match AI generated meme translations with original quotes.
+        This is a game where you match AI generated meme translations with original quotes. 
     </MudText>
     <MudText>
         Used model: llama3.2
@@ -35,10 +35,14 @@
 }
 else
 {
-    <MudText Typo="Typo.h5">Question @questionsCounter</MudText>
+    <MudText Typo="Typo.h5">Question @questionsCounter (@chosenLanguage)</MudText>
     @if (currentQuestion != null)
     {
-        <MudText>@currentQuestion.Translation (@currentQuestion.CorrectIndex)</MudText>
+        <MudPaper Elevation="2" Class="pa-6 mb-6 rounded-lg">
+            <MudText Typo="Typo.h6" Style="font-style: italic; font-weight: 300;" Align="Align.Center">
+                @currentQuestion.Translation
+            </MudText>
+        </MudPaper>
         @if (answerSubmitted)
         {
             @if (userAnswer == currentQuestion.CorrectIndex)
@@ -54,11 +58,24 @@ else
                 </MudAlert>
             }
         }
-        <MudRadioGroup T="int?" @bind-Value="userAnswer" Disabled="@(answerSubmitted)">
+        <MudRadioGroup T="int?" @bind-Value="userAnswer" ReadOnly="@(answerSubmitted)">
             <MudStack>
                 @foreach (var (answer, index) in currentQuestion.Quotes.Select((x, i) => (x, i)))
                 {
-                    <MudRadio Value="@((int?)index)">@index : @answer</MudRadio>
+                    <MudRadio Value="@((int?)index)">
+                        @if (answerSubmitted && index == currentQuestion.CorrectIndex)
+                        {
+                            <MudText Color="Color.Success">@answer</MudText>
+                        }
+                        else if (answerSubmitted && index == userAnswer)
+                        {
+                            <MudText Color="Color.Error"><del>@answer</del></MudText>
+                        }
+                        else
+                        {
+                            @answer
+                        }
+                    </MudRadio>
                 }
             </MudStack>
         </MudRadioGroup>
