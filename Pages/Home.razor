@@ -70,7 +70,7 @@ else
                     @correctAnswers
                 </MudText>
                 <MudText>
-                    (@(100.0 * correctAnswers / (correctAnswers + wrongAnswers))%)
+                    (@Math.Round(100.0 * correctAnswers / (correctAnswers + wrongAnswers), 2)%)
                 </MudText>
             </MudStack>
 
@@ -87,7 +87,7 @@ else
                     @wrongAnswers
                 </MudText>
                 <MudText>
-                    (@(100.0 * wrongAnswers / (correctAnswers + wrongAnswers))%)
+                    (@Math.Round(100.0 * wrongAnswers / (correctAnswers + wrongAnswers), 2)%)
                 </MudText>
             </MudStack>
         </MudContainer>
@@ -165,7 +165,7 @@ else
 
 @code {
     public const int PlaysPerCategory = 20;
-    public const int AnswersCount = 5;
+    public const int AnswersCount = 4;
 
     private readonly Random _random = new();
     private readonly Random _phraseRandom = new();
