@@ -55,9 +55,42 @@
 }
 else
 {
-    @if (questionsCounter > 0)
+    @if (questionNumber > 0)
     {
-        <MudText Typo="Typo.h5">Question @questionsCounter (@chosenLanguage)</MudText>
+        <MudText Typo="Typo.h5">Question @questionNumber (@chosenLanguage)</MudText>
+    }
+    @if (correctAnswers + wrongAnswers > 0)
+    {
+        <MudContainer Class="mt-4 mb-4">
+            <MudStack Row="true">
+                <MudText>
+                    Correct Answers:
+                </MudText>
+                <MudText Color="Color.Success">
+                    @correctAnswers
+                </MudText>
+                <MudText>
+                    (@(100.0 * correctAnswers / (correctAnswers + wrongAnswers))%)
+                </MudText>
+            </MudStack>
+
+            <MudProgressLinear 
+                Color="Color.Success"
+                Value="@((double)correctAnswers / (correctAnswers + wrongAnswers))" 
+                Min="0" Max="1" />
+
+            <MudStack Row="true">
+                <MudText>
+                    Wrong Answers:
+                </MudText>
+                <MudText Color="Color.Error">
+                    @wrongAnswers
+                </MudText>
+                <MudText>
+                    (@(100.0 * wrongAnswers / (correctAnswers + wrongAnswers))%)
+                </MudText>
+            </MudStack>
+        </MudContainer>
     }
     @if (currentQuestion != null)
     {
@@ -141,7 +174,9 @@ else
     private int _totalCategoriesCount;
     private Quiz _quiz = null!;
 
-    private int questionsCounter = 0;
+    private int questionNumber { get; set; } = 0;
+    private int correctAnswers { get; set; } = 0;
+    private int wrongAnswers { get; set; } = 0;
     private List<string> languages = null!;
     private string? chosenLanguage = null;
 
@@ -199,7 +234,7 @@ else
 
     private async Task NextQuestion()
     {
-        questionsCounter++;
+        questionNumber++;
         currentQuestion = null;
         if (_quiz.TimesPlayed >= PlaysPerCategory || 
             !_quiz.TryGetNext(out var question))
@@ -239,6 +274,14 @@ else
 
     private async Task OnAnswerSubmitted()
     {
+        if (userAnswer == currentQuestion!.CorrectIndex)
+        {
+            correctAnswers++;
+        }
+        else
+        {
+            wrongAnswers++;
+        }
         answerSubmitted = true;
     }
 
